@@ -29,27 +29,32 @@ PRPG/
 
 ---
 
-## 🧠 Core Systems
+##  Core Systems
 
 ### 1. The Theme Manager (`theme.lua`)
+
 The engine features a dedicated "Skinning" system. Visuals are not hard-coded into individual files.
 * **Global Configuration:** Toggles between sharp pixels or anti-aliased lines (`lineStyle`), and flush squares or rounded geometry (`cornerRadius`).
 * **Color Reference Library:** Contains normalized (0.0 - 1.0) RGBA values for UI elements, biome fallbacks, and classic palettes (e.g., GameBoy, Cyberpunk, Classic Engine).
 
 ### 2. The Data-Driven Registry (`tilemap/registry.lua`)
+
 Tiles are treated as data containers, not hard-coded `if/then` statements. The Registry defines the "rules of physics" for the world.
 * **Properties include:** `id`, `name`, `texture` (with safe fallback loading), `is_solid` (blocks movement), and `speed_mod` (alters entity velocity).
 
 ### 3. Serialized Map Grids (`tilemap/map.lua`)
+
 Maps are constructed using 2D arrays (tables) of integers, acting directly as the Level Editor. 
 * By feeding a grid of numbers (e.g., `0` for Grass, `1` for Wall, `2` for Water) into `Map:loadSerialized()`, the engine automatically builds the environment and applies the Registry's physics to each coordinate.
 
 ### 4. Terrain-Aware Slide Collision (`characters/entity.lua`)
+
 Characters inherit their physical logic from a master template.
 * **Slide Collision:** X-axis and Y-axis collisions are checked independently against the map grid. This allows entities to smoothly slide along walls when moving diagonally.
 * **Terrain Modifiers:** The entity calculates its center point, checks the map grid beneath it, and multiplies its base stat speed by the terrain's `speed_mod` (e.g., walking through water slows the player to 50% speed automatically).
 
 ### 5. Dynamic Camera & Interaction (`camera.lua` & `game.lua`)
+
 The camera acts as the bridge between the player's screen and the game's internal math.
 * **Smooth Follow (Lerp):** The camera trails the player using linear interpolation for a cinematic feel.
 * **Dynamic Zoom:** Default 2x zoom with a 1x zoom-out function bound to the `Z` key.
@@ -57,7 +62,7 @@ The camera acts as the bridge between the player's screen and the game's interna
 
 ---
 
-## 🛠️ Developer Guide (How-To)
+##  Developer Guide (How-To)
 
 ### Modifying the Map
 1. Open `tilemap/map.lua`.
