@@ -1,44 +1,101 @@
-# RPG Framework Prototype
 
-A modular, lightweight starting point for a top-down RPG built with Lua and the [LÖVE2D](https://love2d.org/) engine. This framework abstracts core engine loops and provides ready-to-use systems for world generation, player movement, RPG character stats, and live debugging.
+#  GP-RPGV2.2 (Prototype RPG Engine)
 
-##  Features
+## Overview
+**GP-RPGV2** is a modular, data-driven 2D top-down RPG engine built on Lua and the **LÖVE (Love2D)** framework... an upgrade to the previous GP-RPGV1(not on github in any version).. which was setup for the engine.. V2 expands on data management adds more modularity.. and does a complete overhaul from AP-RPG engine
 
-* **Procedural Tilemap System**: Generates grid-based worlds with boundary walls, random obstacles (10%), and interactable tiles (5%). Features pixel-to-grid coordinate conversion and basic collision logic.
-* **Entity & Character System**: 
-  * Base `Entity` class for easy inheritance.
-  * `Player` class with smooth 8-way movement and bounding-box collision detection.
-  * `Character` data structure that separates base stats (strength, speed, health, etc.) from derived stats (moveSpeed, maxHealth) with automatic recalculation.
-* **In-Game Developer Console**: A fully featured dropdown terminal to manipulate the game state in real-time. Features input history, scrolling, and active stat syncing.
-* **Camera Module**: A simple 2D view-translation camera that automatically locks onto the player entity.
-* **Scene Management**: A clean `main.lua` entry point that delegates all LÖVE callbacks (`update`, `draw`, `keypressed`, etc.) to the currently active scene.
+Transitioning from the hard-coded logic of V1, V2 is designed to function like a professional engine template (similar to RPG Maker). It separates visual rendering, physical data, and game logic into distinct, easily mutable modules. The engine is currently heavily optimized for **live map editing**, **smooth systemic physics**, and **rapid visual theming**.
 
-##  Controls
+---
 
-* **W, A, S, D**: Move the player
-* **E**: Interact with objects (blue tiles)
-* **`** or **~** or **F1**: Toggle the Developer Console
-* **Mouse Wheel / Page Up & Down**: Scroll console history
+##  Project Architecture
+The engine strictly enforces a decoupled folder hierarchy.
 
-##  Developer Console Commands
+```text
+PRPG/
+├── main.lua              # Engine bootloader; initializes Themes and Registries
+├── game.lua              # Scene conductor; manages the camera, map, player, and live interactions
+├── camera.lua            # Smooth lerp camera with zoom and Screen-to-World coordinate translation
+├── theme.lua             # Global visual manager (Design Token System) for UI, fallbacks, and palettes
+├── assets/               # (Optional) Directory for .png sprites and textures
+├── characters/           
+│   ├── entity.lua        # Master OOP class for physics, slide-collision, and terrain-awareness
+│   └── player.lua        # Inherits from Entity; handles WASD input and Theme-based rendering
+└── tilemap/              
+    ├── registry.lua      # The Data Dictionary; maps integer IDs to physical/visual tile properties
+    ├── map.lua           # Grid manager; handles Serialized data tables and AABB collision math
+    └── tile.lua          # Individual tile rendering logic (Texture or Theme fallback)
+```
 
-The built-in console allows you to debug and modify the game on the fly. Open it and try these commands:
+---
 
-* `help`: Lists available commands.
-* `clear`: Clears the console output.
-* `debug world`: Prints map dimensions and player coordinates.
-* `debug player`: Prints current HP and movement speed.
-* `char show`: Displays all current character base stats.
-* `char set <stat> <value>`: Modifies a base stat (e.g., `char set speed 10`) and instantly updates derived stats and player movement.
-* `tile set <type> <x> <y>`: Replaces a specific tile on the grid (`empty`, `wall`, or `interact`).
-* `map regen`: Procedurally generates a brand new map layout.
+## 🧠 Core Systems
 
+### 1. The Theme Manager (`theme.lua`)
+The engine features a dedicated "Skinning" system. Visuals are not hard-coded into individual files.
+* **Global Configuration:** Toggles between sharp pixels or anti-aliased lines (`lineStyle`), and flush squares or rounded geometry (`cornerRadius`).
+* **Color Reference Library:** Contains normalized (0.0 - 1.0) RGBA values for UI elements, biome fallbacks, and classic palettes (e.g., GameBoy, Cyberpunk, Classic Engine).
 
-### Prerequisites
-You will need the [LÖVE2D Framework](https://love2d.org/) (Version 11.0+) installed on your machine.
+### 2. The Data-Driven Registry (`tilemap/registry.lua`)
+Tiles are treated as data containers, not hard-coded `if/then` statements. The Registry defines the "rules of physics" for the world.
+* **Properties include:** `id`, `name`, `texture` (with safe fallback loading), `is_solid` (blocks movement), and `speed_mod` (alters entity velocity).
 
-### Running the Game
-1. Clone this repository.
-2. Drag the project folder directly onto the LÖVE executable, or run it via terminal:
-   ```bash
-   love path/to/your/project_folder
+### 3. Serialized Map Grids (`tilemap/map.lua`)
+Maps are constructed using 2D arrays (tables) of integers, acting directly as the Level Editor. 
+* By feeding a grid of numbers (e.g., `0` for Grass, `1` for Wall, `2` for Water) into `Map:loadSerialized()`, the engine automatically builds the environment and applies the Registry's physics to each coordinate.
+
+### 4. Terrain-Aware Slide Collision (`characters/entity.lua`)
+Characters inherit their physical logic from a master template.
+* **Slide Collision:** X-axis and Y-axis collisions are checked independently against the map grid. This allows entities to smoothly slide along walls when moving diagonally.
+* **Terrain Modifiers:** The entity calculates its center point, checks the map grid beneath it, and multiplies its base stat speed by the terrain's `speed_mod` (e.g., walking through water slows the player to 50% speed automatically).
+
+### 5. Dynamic Camera & Interaction (`camera.lua` & `game.lua`)
+The camera acts as the bridge between the player's screen and the game's internal math.
+* **Smooth Follow (Lerp):** The camera trails the player using linear interpolation for a cinematic feel.
+* **Dynamic Zoom:** Default 2x zoom with a 1x zoom-out function bound to the `Z` key.
+* **Screen-to-World Translation:** The camera actively reverses its own transformations to calculate exactly where the user's mouse is pointing in the game world, highlighting the specific `32x32` grid tile and displaying its Registry Data in real-time.
+
+---
+
+## 🛠️ Developer Guide (How-To)
+
+### Modifying the Map
+1. Open `tilemap/map.lua`.
+2. Locate the `customMapData` table.
+3. Edit the 2D array of integers to paint your world. Ensure every row has the same number of columns.
+4. (Reference `registry.lua` for available Tile IDs).
+
+### Changing the Engine's Aesthetic
+1. Open `theme.lua`.
+2. To change the background, player, or fallback block colors, update the variables inside the `Theme.colors` table. 
+3. Use the provided *Color Reference Library* at the top of the file for quick hex-to-RGB values.
+4. To make tiles flush and sharp, set `Theme.config.cornerRadius = 0`. To make them soft and rounded, set it to `4` or `8`.
+
+### Adding a New Tile Type (e.g., Lava)
+1. Open `tilemap/registry.lua`.
+2. Add a new block to `Registry.tiles`:
+```lua
+    Registry.tiles[4] = {
+        name = "Lava",
+        is_solid = false,
+        speed_mod = 0.2, -- Extremely slow
+        color = {0.85, 0.15, 0.05}, -- Or map to Theme.colors.lava
+        texture = safeLoad("assets/tiles/lava.png")
+    }
+```
+3. Open `tilemap/map.lua` and type the number `4` anywhere in your `customMapData` grid. The engine will instantly render it and apply the massive speed penalty.
+
+---
+
+## checkpoints
+
+* [x] **V1:** Foundation, Entity Inheritance, Procedural Maps.
+* [x] **V2.0:** Data-Driven Asset Registry, Slide Collision.
+* [x] **V2.1:** Serialized Map Tables, Theme Manager / Skinning.
+* [x] **V2.2:** Mouse-to-World Coordinate Translation, Tile Hovering.
+* [ ] **V2.3 (Planned):** Live Map Editing (Click to paint tiles during runtime).
+* [ ] **V2.4 (Planned):** Layering System (Decoration/Foliage layers over terrain).
+* [ ] **V2.5 (Planned):** Interaction Hooks (Triggering dialogue/events on tile collision).
+
+***
+
