@@ -1,5 +1,7 @@
 
-#  GP-RPGV2.2 (Prototype RPG Engine)
+#  GP-RPGV2.1
+
+(Prototype RPG Engine)
 
 ## Overview
 **GP-RPGV2** is a modular, data-driven 2D top-down RPG engine built on Lua and the **LÖVE (Love2D)** framework... an upgrade to the previous GP-RPGV1(not on github in any version).. which was setup for the engine.. V2 expands on data management adds more modularity.. and does a complete overhaul from AP-RPG engine
@@ -91,16 +93,4 @@ The camera acts as the bridge between the player's screen and the game's interna
 3. Open `tilemap/map.lua` and type the number `4` anywhere in your `customMapData` grid. The engine will instantly render it and apply the massive speed penalty.
 
 ---
-
-## checkpoints
-
-* [x] **V1:** Foundation, Entity Inheritance, Procedural Maps.
-* [x] **V2.0:** Data-Driven Asset Registry, Slide Collision.
-* [x] **V2.1:** Serialized Map Tables, Theme Manager / Skinning.
-* [x] **V2.2:** Mouse-to-World Coordinate Translation, Tile Hovering.
-* [ ] **V2.3 (Planned):** Live Map Editing (Click to paint tiles during runtime).
-* [ ] **V2.4 (Planned):** Layering System (Decoration/Foliage layers over terrain).
-* [ ] **V2.5 (Planned):** Interaction Hooks (Triggering dialogue/events on tile collision).
-
-***
 
